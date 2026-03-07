@@ -1,11 +1,11 @@
 import type { Express, Request, Response } from "express";
 import type { Server } from "http";
 import bcrypt from "bcrypt";
-import { api, errorSchemas } from "@shared/routes";
+import { api, errorSchemas } from "../shared/routes.js";
 import { z } from "zod";
-import { connectDB } from "./db";
+import { connectDB } from "./db.js";
 import { User, Post, Comment, Message, Conversation, Notification, ForgotPassword } from "./models";
-import { generateToken, authenticate, adminOnly } from "./auth";
+import { generateToken, authenticate, adminOnly } from "./auth.js";
 
 export async function registerRoutes(
   httpServer: Server,
