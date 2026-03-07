@@ -1,5 +1,12 @@
 import mongoose from "mongoose";
 
+function transform(doc: any, ret: any) {
+  ret.id = ret._id.toString();
+  delete ret._id;
+  delete ret.__v;
+  return ret;
+}
+
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   username: { type: String, required: true, unique: true },
@@ -12,29 +19,49 @@ const userSchema = new mongoose.Schema({
   friends: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   friendRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   sentRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-}, { timestamps: true });
+  }, {
+  timestamps: true,
+  toJSON: { transform },
+  toObject: { transform }
+});
 
 const postSchema = new mongoose.Schema({
   authorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   content: { type: String, required: true },
   likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-}, { timestamps: true });
+  }, {
+  timestamps: true,
+  toJSON: { transform },
+  toObject: { transform }
+});
 
 const commentSchema = new mongoose.Schema({
   postId: { type: mongoose.Schema.Types.ObjectId, ref: 'Post', required: true },
   authorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   content: { type: String, required: true },
-}, { timestamps: true });
+  }, {
+  timestamps: true,
+  toJSON: { transform },
+  toObject: { transform }
+});
 
 const messageSchema = new mongoose.Schema({
   conversationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Conversation', required: true },
   senderId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   content: { type: String, required: true },
-}, { timestamps: true });
+  }, {
+  timestamps: true,
+  toJSON: { transform },
+  toObject: { transform }
+});
 
 const conversationSchema = new mongoose.Schema({
   participants: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-}, { timestamps: true });
+  }, {
+  timestamps: true,
+  toJSON: { transform },
+  toObject: { transform }
+});
 
 const notificationSchema = new mongoose.Schema({
   recipientId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
@@ -43,14 +70,22 @@ const notificationSchema = new mongoose.Schema({
   postId: { type: mongoose.Schema.Types.ObjectId, ref: 'Post' },
   content: { type: String },
   read: { type: Boolean, default: false },
-}, { timestamps: true });
+  }, {
+  timestamps: true,
+  toJSON: { transform },
+  toObject: { transform }
+});
 
 const forgotPasswordSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   username: { type: String, required: true },
   desiredPassword: { type: String, required: true },
   status: { type: String, enum: ["pending", "resolved"], default: "pending" },
-}, { timestamps: true });
+  }, {
+  timestamps: true,
+  toJSON: { transform },
+  toObject: { transform }
+});
 
 export const User = mongoose.models.User || mongoose.model("User", userSchema);
 export const Post = mongoose.models.Post || mongoose.model("Post", postSchema);
