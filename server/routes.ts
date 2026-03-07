@@ -100,10 +100,11 @@ export async function registerRoutes(
     const posts = await Post.find().populate('authorId', 'name username profilePicture').sort({ createdAt: -1 });
     // Transform authorId to author for response matching schema
     const formattedPosts = posts.map(p => {
-      const doc = p.toJSON();
-      doc.author = doc.authorId;
-      return doc;
-    });
+  const doc = p.toJSON() as any;
+  doc.author = doc.authorId;
+  delete doc.authorId;   // IMPORTANT
+  return doc;
+});
     res.status(200).json(formattedPosts);
   });
 
@@ -117,6 +118,7 @@ export async function registerRoutes(
     await post.populate('authorId', 'name username profilePicture');
     const doc = post.toJSON() as any;
     doc.author = doc.authorId;
+    delete doc.authorId;
     
     // Send notifications to friends
     const user = await User.findById(userId);
@@ -206,10 +208,15 @@ export async function registerRoutes(
     const me = await User.findById(userId);
     if (!me) return res.status(401).json({ message: "Unauthorized" });
 
-    const excludeIds = [userId, ...me.friends, ...me.friendRequests, ...me.sentRequests];
+    const excludeIds = [
+  userId,
+  ...(me.friends || []),
+  ...(me.friendRequests || []),
+  ...(me.sentRequests || [])
+];
     const users = await User.find({ _id: { $nin: excludeIds }, isAdmin: false })
       .select('-password -phone -email')
-      .limit(20);
+      .limit(50);
       
     res.status(200).json(users.map(u => u.toJSON()));
   });
