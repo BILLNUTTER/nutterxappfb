@@ -1,8 +1,11 @@
 import mongoose from "mongoose";
 
-function transform(doc: any, ret: any) {
-  ret.id = ret._id.toString();
-  delete ret._id;
+function transform(doc, ret) {
+  if (ret._id) {
+    ret.id = ret._id.toString();
+    delete ret._id;
+  }
+
   delete ret.__v;
   return ret;
 }
