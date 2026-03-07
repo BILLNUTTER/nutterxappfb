@@ -101,9 +101,15 @@ export async function registerRoutes(
     // Transform authorId to author for response matching schema
     const formattedPosts = posts.map(p => {
   const doc = p.toJSON() as any;
-  doc.author = doc.authorId;
-  delete doc.authorId;   // IMPORTANT
-  return doc;
+
+  return {
+    id: doc._id.toString(),
+    content: doc.content,
+    likes: doc.likes || [],
+    createdAt: doc.createdAt,
+    updatedAt: doc.updatedAt,
+    author: doc.authorId
+  };
 });
     res.status(200).json(formattedPosts);
   });
@@ -117,7 +123,17 @@ export async function registerRoutes(
     
     await post.populate('authorId', 'name username profilePicture');
     const doc = post.toJSON() as any;
-    doc.author = doc.authorId;
+
+const formatted = {
+  id: doc._id.toString(),
+  content: doc.content,
+  likes: doc.likes || [],
+  createdAt: doc.createdAt,
+  updatedAt: doc.updatedAt,
+  author: doc.authorId
+};
+
+res.status(201).json(formatted);
     delete doc.authorId;
     
     // Send notifications to friends
@@ -218,7 +234,15 @@ export async function registerRoutes(
       .select('-password -phone -email')
       .limit(50);
       
-    res.status(200).json(users.map(u => u.toJSON()));
+    res.status(200).json(
+  users.map(u => {
+    const doc = u.toJSON() as any;
+    return {
+      ...doc,
+      id: doc._id.toString()
+    };
+  })
+);
   });
 
   app.get(api.users.friends.path, authenticate, async (req: Request, res: Response) => {
