@@ -1,6 +1,6 @@
 import express, { type Request, type Response, type NextFunction } from "express";
-import { registerRoutes } from "./routes";
-import { serveStatic } from "./static";
+import { registerRoutes } from "./routes.js";
+import { serveStatic } from "./static.js";
 import { createServer } from "http";
 import cors from "cors";
 
