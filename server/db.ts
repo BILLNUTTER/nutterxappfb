@@ -17,8 +17,10 @@ export async function connectDB() {
     mongoose.set("toJSON", {
       virtuals: true,
       transform: (_doc, converted) => {
-        delete converted._id;
-        delete converted.__v;
+        const obj = converted as any;
+        delete obj._id;
+        delete obj.__v;
+        return obj;
       }
     });
 
