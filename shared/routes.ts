@@ -5,7 +5,7 @@ import {
   commentSchema, insertCommentSchema, 
   messageSchema, conversationSchema, 
   notificationSchema, forgotPasswordSchema 
-} from "./schema";
+} from "./schema.js";
 
 export const errorSchemas = {
   validation: z.object({ message: z.string() }),
