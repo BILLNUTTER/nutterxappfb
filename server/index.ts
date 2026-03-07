@@ -48,16 +48,16 @@ export function log(message: string, source = "express") {
   console.log(`${formattedTime} [${source}] ${message}`);
 }
 
-app.use((req, res, next) => {
+app.use((req: Request, res: Response, next: NextFunction) => {
   const start = Date.now();
   const path = req.path;
   let capturedJsonResponse: Record<string, any> | undefined;
 
-  const originalJson = res.json;
+  const originalJson = res.json.bind(res);
 
-  res.json = function (body: any, ...args: any[]) {
+  res.json = function (body: any) {
     capturedJsonResponse = body;
-    return originalJson.apply(res, [body, ...args]);
+    return originalJson(body);
   };
 
   res.on("finish", () => {
