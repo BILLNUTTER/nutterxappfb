@@ -121,7 +121,7 @@ export async function registerRoutes(
     // Send notifications to friends
     const user = await User.findById(userId);
     if (user && user.friends) {
-      const notifications = user.friends.map(friendId => ({
+      const notifications = user.friends.map((friendId: string) => ({
         recipientId: friendId,
         senderId: userId,
         type: 'friend_post',
@@ -262,8 +262,8 @@ export async function registerRoutes(
 
     if (!me || !requester) return res.status(404).json({ message: "User not found" });
 
-    me.friendRequests = me.friendRequests.filter(id => id.toString() !== requesterId);
-    requester.sentRequests = requester.sentRequests.filter(id => id.toString() !== userId);
+  me.friendRequests = me.friendRequests.filter((id: string) => id.toString() !== requesterId);
+requester.sentRequests = requester.sentRequests.filter((id: string) => id.toString() !== userId);
 
     if (!me.friends.includes(requesterId)) me.friends.push(requesterId);
     if (!requester.friends.includes(userId)) requester.friends.push(userId);
@@ -288,11 +288,11 @@ export async function registerRoutes(
     const target = await User.findById(targetId);
 
     if (me) {
-      me.friends = me.friends.filter(id => id.toString() !== targetId);
+      me.friends = me.friends.filter((id: string) => id.toString() !== targetId);
       await me.save();
     }
     if (target) {
-      target.friends = target.friends.filter(id => id.toString() !== userId);
+      target.friends = target.friends.filter((id: string) => id.toString() !== userId);
       await target.save();
     }
 
@@ -394,7 +394,7 @@ export async function registerRoutes(
       await new Notification({ recipientId: userId, type: 'system', content }).save();
     } else {
       const users = await User.find();
-      const notifs = users.map(u => ({ recipientId: u._id, type: 'system', content }));
+      const notifs = users.map((u: any) => ({ recipientId: u._id, type: "system", content }));
       await Notification.insertMany(notifs);
     }
     res.status(201).json({ message: "Notification sent" });
@@ -408,7 +408,7 @@ export async function registerRoutes(
 
   app.get(api.admin.passwordRequests.path, adminOnly, async (req: Request, res: Response) => {
     const requests = await ForgotPassword.find({ status: "pending" }).populate('userId', 'name username');
-    res.status(200).json(requests.map(r => r.toJSON()));
+    res.status(200).json(requests.map((r: any) => r.toJSON()));
   });
 
   app.put(api.admin.resolvePasswordRequest.path, adminOnly, async (req: Request, res: Response) => {
