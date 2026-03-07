@@ -4,7 +4,7 @@ import bcrypt from "bcrypt";
 import { api, errorSchemas } from "../shared/routes.js";
 import { z } from "zod";
 import { connectDB } from "./db.js";
-import { User, Post, Comment, Message, Conversation, Notification, ForgotPassword } from "./models";
+import { User, Post, Comment, Message, Conversation, Notification, ForgotPassword } from "./models.js";
 import { generateToken, authenticate, adminOnly } from "./auth.js";
 
 export async function registerRoutes(
