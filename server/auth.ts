@@ -1,31 +1,42 @@
 import jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
 
-const JWT_SECRET = process.env.JWT_SECRET || "nutterx_super_secret_key_12345";
+const JWT_SECRET = process.env.JWT_SECRET as string;
 
-export function generateToken(userId: string) {
-  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: '7d' });
+if (!JWT_SECRET) {
+  throw new Error("JWT_SECRET is not defined");
 }
 
-export function authenticate(req: Request, res: Response, next: NextFunction) {
+interface AuthRequest extends Request {
+  userId?: string;
+}
+
+export function generateToken(userId: string) {
+  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: "7d" });
+}
+
+export function authenticate(req: AuthRequest, res: Response, next: NextFunction) {
   const authHeader = req.headers.authorization;
+
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return res.status(401).json({ message: "Unauthorized" });
   }
 
   const token = authHeader.split(" ")[1];
+
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
-    (req as any).userId = decoded.userId;
+    req.userId = decoded.userId;
     next();
-  } catch (error) {
-    return res.status(401).json({ message: "Unauthorized" });
+  } catch {
+    return res.status(401).json({ message: "Invalid or expired token" });
   }
 }
 
 export function adminOnly(req: Request, res: Response, next: NextFunction) {
-  const adminKey = req.query.adminKey || req.headers['x-admin-key'];
-  if (adminKey === process.env.ADMIN_KEY || adminKey === "nutterx-admin-123") {
+  const adminKey = req.query.adminKey || req.headers["x-admin-key"];
+
+  if (adminKey && adminKey === process.env.ADMIN_KEY) {
     next();
   } else {
     return res.status(401).json({ message: "Unauthorized Admin" });
