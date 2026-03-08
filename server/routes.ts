@@ -103,7 +103,7 @@ export async function registerRoutes(
   const doc = p.toJSON() as any;
 
   return {
-    id: doc._id.toString(),
+    id: doc._id?.toString(),
     content: doc.content,
     likes: doc.likes || [],
     createdAt: doc.createdAt,
@@ -115,42 +115,45 @@ export async function registerRoutes(
   });
 
   app.post(api.posts.create.path, authenticate, async (req: Request, res: Response) => {
-    const userId = (req as any).userId;
-    const input = api.posts.create.input.parse(req.body);
-    
-    const post = new Post({ authorId: userId, content: input.content });
-    await post.save();
-    
-    await post.populate('authorId', 'name username profilePicture');
-    const doc = post.toJSON() as any;
+  const userId = (req as any).userId;
+  const input = api.posts.create.input.parse(req.body);
 
-const formatted = {
-  id: doc._id.toString(),
-  content: doc.content,
-  likes: doc.likes || [],
-  createdAt: doc.createdAt,
-  updatedAt: doc.updatedAt,
-  author: doc.authorId
-};
-
-res.status(201).json(formatted);
-    delete doc.authorId;
-    
-    // Send notifications to friends
-    const user = await User.findById(userId);
-    if (user && user.friends) {
-      const notifications = user.friends.map((friendId: string) => ({
-        recipientId: friendId,
-        senderId: userId,
-        type: 'friend_post',
-        postId: post._id,
-        content: `${user.name} created a new post`
-      }));
-      await Notification.insertMany(notifications);
-    }
-    
-    res.status(201).json(doc);
+  const post = new Post({
+    authorId: userId,
+    content: input.content,
+    likes: []
   });
+
+  await post.save();
+  await post.populate("authorId", "name username profilePicture");
+
+  const doc = post.toJSON() as any;
+
+  const formatted = {
+    id: doc._id?.toString(),
+    content: doc.content,
+    likes: doc.likes || [],
+    createdAt: doc.createdAt,
+    updatedAt: doc.updatedAt,
+    author: doc.authorId
+  };
+
+  // Send notifications to friends
+  const user = await User.findById(userId);
+  if (user?.friends?.length) {
+    const notifications = user.friends.map((friendId: string) => ({
+      recipientId: friendId,
+      senderId: userId,
+      type: "friend_post",
+      postId: post._id,
+      content: `${user.name} created a new post`
+    }));
+
+    await Notification.insertMany(notifications);
+  }
+
+  res.status(201).json(formatted);
+});
 
   app.post(api.posts.like.path, authenticate, async (req: Request, res: Response) => {
     const userId = (req as any).userId;
@@ -161,7 +164,7 @@ res.status(201).json(formatted);
     if (index === -1) {
       post.likes.push(userId);
       // Notify author
-      if (post.authorId.toString() !== userId) {
+      if (post.authorId && post.authorId.toString() !== userId) {
         await new Notification({
           recipientId: post.authorId,
           senderId: userId,
