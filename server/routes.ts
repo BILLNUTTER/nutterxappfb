@@ -107,7 +107,7 @@ app.get(api.posts.list.path, authenticate, async (req: Request, res: Response) =
     return {
       id: doc._id?.toString(),
       content: doc.content,
-      likes: doc.likes || [],
+      likes: (doc.likes || []).map((id: any) => id.toString()),
       createdAt: doc.createdAt,
       updatedAt: doc.updatedAt,
       author: doc.authorId
@@ -124,6 +124,7 @@ app.get(api.posts.list.path, authenticate, async (req: Request, res: Response) =
   res.status(200).json(formattedPosts);
 });
 
+  
   app.post(api.posts.create.path, authenticate, async (req: Request, res: Response) => {
   const userId = (req as any).userId;
   const input = api.posts.create.input.parse(req.body);
@@ -142,7 +143,7 @@ app.get(api.posts.list.path, authenticate, async (req: Request, res: Response) =
   const formatted = {
     id: doc._id?.toString(),
     content: doc.content,
-    likes: doc.likes || [],
+    likes: (doc.likes || []).map((id: any) => id.toString()),
     createdAt: doc.createdAt,
     updatedAt: doc.updatedAt,
     author: doc.authorId
