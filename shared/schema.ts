@@ -32,12 +32,11 @@ export const loginUserSchema = z.object({
 
 export const postSchema = z.object({
   id: z.string(),
-  authorId: z.string(),
-  author: userSchema.optional(),
   content: z.string(),
   likes: z.array(z.string()).default([]),
   createdAt: z.string().datetime().optional(),
   updatedAt: z.string().datetime().optional(),
+  author: userSchema.nullable().optional(),
 });
 
 export const insertPostSchema = postSchema.pick({
