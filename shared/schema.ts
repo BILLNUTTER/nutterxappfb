@@ -1,5 +1,14 @@
 import { z } from "zod";
 
+
+export const publicUserSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  username: z.string(),
+  profilePicture: z.string().optional(),
+});
+
+
 export const userSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -36,7 +45,7 @@ export const postSchema = z.object({
   likes: z.array(z.string()).default([]),
   createdAt: z.string().datetime().optional(),
   updatedAt: z.string().datetime().optional(),
-  author: userSchema.nullable().optional(),
+  author: publicUserSchema.optional().nullable(),
 });
 
 export const insertPostSchema = postSchema.pick({
