@@ -233,31 +233,43 @@ app.get(api.posts.list.path, authenticate, async (req: Request, res: Response) =
   });
 
   // Users (Friends, Discover)
-  app.get(api.users.discover.path, authenticate, async (req: Request, res: Response) => {
+app.get(api.users.discover.path, authenticate, async (req: Request, res: Response) => {
+  try {
     const userId = (req as any).userId;
+
     const me = await User.findById(userId);
     if (!me) return res.status(401).json({ message: "Unauthorized" });
 
     const excludeIds = [
-  userId,
-  ...(me.friends || []),
-  ...(me.friendRequests || []),
-  ...(me.sentRequests || [])
-];
-    const users = await User.find({ _id: { $nin: excludeIds }, isAdmin: false })
-      .select('-password -phone -email')
+      userId,
+      ...(me.friends || []),
+      ...(me.friendRequests || []),
+      ...(me.sentRequests || [])
+    ];
+
+    const users = await User.find({
+      _id: { $nin: excludeIds },
+      isAdmin: false
+    })
+      .select("-password -phone -email")
       .limit(50);
-      
-    res.status(200).json(
-  users.map(u => {
-    const doc = u.toJSON() as any;
-    return {
-      ...doc,
-      id: doc._id.toString()
-    };
-  })
-);
-  });
+
+    const safeUsers = users.map((u: any) => {
+      const doc = u.toJSON ? u.toJSON() : u;
+
+      return {
+        ...doc,
+        id: doc._id ? doc._id.toString() : doc.id || ""
+      };
+    });
+
+    res.status(200).json(safeUsers);
+
+  } catch (error) {
+    console.error("Discover users error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
 
   app.get(api.users.friends.path, authenticate, async (req: Request, res: Response) => {
     const userId = (req as any).userId;
